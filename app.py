@@ -3,14 +3,14 @@ from datetime import datetime
 from flask import Flask, request, jsonify, render_template
 import numpy as np
 
-# 🔹 Initialisation de Flask
+# Initialisation de Flask
 app = Flask(__name__)
 
-# 🔹 Chargement du StandardScaler et du modèle
+# Chargement du StandardScaler et du modèle
 scaler = joblib.load("scaler.pkl")
 model = joblib.load("best_xgboost_model.h5")
 
-print("✅ Modèle et scaler chargés avec succès !")
+print("Modèle et scaler chargés avec succès !")
 
 @app.route('/')
 def home():
@@ -37,7 +37,7 @@ def predict():
                 int(request.form.get("hour_of_day"))
             ]
 
-        # 🔹 Transformation des features (encodage et conversion)
+        # Transformation des features (encodage et conversion)
         features[0] = int(features[0][1:])
         features[3] = int(features[3][1:])
         features[4] = int(features[4][1:])
@@ -53,7 +53,7 @@ def predict():
         merchant_category_mapping = {"retail": 0, "restaurant": 1, "technology": 2, "travel": 3, "entertainment": 4}
         features[9] = merchant_category_mapping.get(features[9], -1)
 
-        # 🔹 Conversion timestamp avec gestion des différents formats
+        # Conversion timestamp avec gestion des différents formats
         try:
             timestamp = features[1]
 
@@ -70,22 +70,22 @@ def predict():
             return jsonify(
                 {"error": "Format de date invalide. Utilisez 'YYYY-MM-DD HH:MM:SS' ou 'YYYY-MM-DDTHH:MM'."}), 400
 
-        # 🔹 Ajout des features temporelles
+        # Ajout des features temporelles
         features.extend([dt.hour, dt.weekday(), dt.month, dt.isocalendar()[1]])
 
-        # 🔹 Vérification du format des données
+        # Vérification du format des données
         if len(features) != 15:
             return jsonify({"error": f"Feature shape mismatch: expected 15, got {len(features)}"}), 400
 
-        # 🔹 Normalisation des données
+        # Normalisation des données
         features = np.array(features).reshape(1, -1)
         features_scaled = scaler.transform(features)
 
-        # 🔹 Prédiction avec le modèle
+        # Prédiction model
         prediction = model.predict(features_scaled)[0]
         probability = model.predict_proba(features_scaled)[0][1]
 
-        # 🔹 Logs de débogage
+        # débogage
         print("Données normalisées :", features_scaled)
         print("Prédiction :", prediction)
         print("Probabilité :", probability)
